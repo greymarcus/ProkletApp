@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+        <title>ProkletApp</title>
+        
+        <script src="js/jquery-3.3.1.min.js"></script>
+        
+        <style>
+            html{
+                height: 100%;
+            }
+            body{
+                background-image: url(img/wood_bg.png);
+/*                background-image: url(img/wood_bg.jpg);*/
+                background-size: cover;
+                text-align: center;
+                height: 100%;
+                overflow: hidden;
+            }
+            #main{
+                background-image: url(img/bg.jpg);
+                background-size: cover;
+                width: 95%;
+                height: 40%;
+                margin: auto;
+                margin-top: 20%;
+                border-radius: 20px;
+            }
+            #main button.main{
+                width: 42%;
+                height: 50%;
+                margin-top: 20%;
+                margin-left: 2%;
+                margin-right: 2%;
+                margin-bottom: 20%;
+                border-radius: 10px;
+            }
+            #dispensa{
+                background-color: rgba(255, 186, 0, 0.4);
+                border: none;
+                color: white;
+            }
+            #altro{
+                background-color: rgba(0, 153, 255, 0.4);
+                border: none;
+                color: white;
+            }
+            #empty{
+                background-color: rgba(188, 143, 143, 0.6);
+                margin: auto;
+                color: black;
+                width: 70%;
+            }
+            
+            .nascosto{
+                display: none;
+            }
+            p#title{
+                font-family: "Papyrus", cursive, serif;
+                font-size: 1.4em;
+            }
+            .btns{
+                margin-left: 1%;
+                margin-right: 1%;
+                float: right;
+                border-radius: 5px;
+            }
+            .entry{
+                width: 70%;
+                padding: 1.5%;
+                text-align: left;
+                font-weight: bold;
+                background-color: rgba(208, 150, 150, 0.7);
+                overflow: scroll;
+            }
+            .overfl{
+                overflow: auto;
+            }
+            .bttm{
+                margin-left: 3%;
+                margin-right: 3%;
+                padding: 2%;
+                border-radius: 5px;
+            }
+            #new{
+                background-color: white;
+            }
+        </style>
+    </head>
+    <body>
+       <h1><strong><p id="title">ProkletApp</p></strong></h1>
+       <div id="main">
+           <button id="dispensa" class="main" onclick="openDispensa()"><h4>DISPENSA</h4></button>
+           <button id="altro" class="main" onclick="openAltro()"><h4>ALTRE SCORTE</h4></button>
+       </div>
+        <script>
+            
+            var soundArr = ["sound/Voice 002.m4a","sound/Voice 003.m4a","sound/Voice 010.mp4",
+                            "sound/Voice 004.m4a","sound/Voice 005.m4a","sound/Voice 006.m4a",
+                            "sound/Voice 001.mp4","sound/Voice 008.mp4","sound/Voice 009.mp4",];
+            var fx = Math.floor(Math.random() * 9);
+            var audio = new Audio(soundArr[fx]);
+            audio.play();
+            
+            function openDispensa(){
+                $('#dispensa, #altro, #title').addClass('nascosto');
+                $('#main').css('margin-top', '20%');
+                $('#main').css('height', '70%');
+                $('#main').css('background-image', 'url(img/disp2.png)');
+                $('#main').css('background-size', 'cover');
+                $('#main').addClass('overfl');
+                
+                fromDispensa();
+                
+                dispCheck = setInterval(function(){
+                    var entries = $('.entry').length;
+                    var empty = $('.empty').length;
+                    if((!entries) && (!empty)){
+                        $('#main').css('padding-top', '3%');
+                        $('#main').html('<div id="empty" class="empty"><h1><strong>Scorte finite!</strong></h1></div>');
+                        $('#main').append('<br><button class="bttm" onclick="newDisp()">Nuovo</button>');
+                        $('#main').append('<button class="bttm" onclick="back()">Indietro</button>');
+                    }
+                    if((empty) && (entries))
+                        $('#empty').remove();
+                        $('#main').css('padding-top', '0');
+                }, 1000);
+            }
+            
+            function fromDispensa(){
+               var querystring = "ask=requestDispensa";
+               $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/fromDispensa.php",
+                   data: querystring,
+                   success: function(result){
+//                       alert("OK");
+//                       console.log(result);
+                       if(result){
+                           result = result.replace(/-/g , ' ');
+                           $('#main').html(result);
+                       }
+                   },
+                   error: function(result){
+                       alert("Impossibile contattare il server.");
+//                       console.log(result);
+                   }
+               });
+            }
+            
+            function newDisp(){
+                $('.bttm').first().before('<button id="conf" class="btns" onclick="toDispensa()"><img src="img/check2.png"></button><input type="text" id="new" class="entry"></input><br>');
+                $('button').attr('disabled', true);
+                $('#new').on('change', function(){
+                    var str = $('#new').val();
+                    if(str != ''){
+                       $('#conf').attr('disabled', false);
+                    }
+                });
+            }
+            
+            function toDispensa(){
+                var newItem = $('input').val();
+                console.log(newItem);
+                var validString = newItem.replace(/ /g , '-');
+                console.log(validString);
+                var querystring = 'item=' + validString;
+                console.log(querystring);
+                $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/toDispensa.php",
+                   data: querystring,
+                   success: function(result){
+                       if(result == 'ok'){
+                           console.log(result);
+                           $('input').replaceWith('<div class="entry">' + newItem + '</div>');
+                           $('button').attr('disabled', false);
+                           $('#conf').remove();
+                       }else{
+                           alert(result);
+                       }
+                   },
+                   error: function(result){
+//                       console.log("errore");
+//                       console.log(result);
+                       alert('Impossibile raggiungere il server.')
+                   }
+                });
+            }
+            
+            function eraseDisp(selector){
+                var delItem = $('#' + selector).text();
+                console.log(delItem);
+                var validString = delItem.replace(/ /g , '-');
+                console.log(validString);
+                var querystring = 'item=' + validString;
+                console.log(querystring);
+                console.log(selector);
+                $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/eliminaDisp.php",
+                   data: querystring,
+                   success: function(result){
+                       if(result == 'ok'){
+                           console.log(result);
+                           $('.' + selector).remove();
+                       }else{
+                           alert(result);
+                       }
+                   },
+                   error: function(result){
+                       console.log("errore");
+                   }
+                });
+            }
+            
+            function editDisp(selector){
+                var oldItem = $('#' + selector).text();
+                console.log(oldItem);
+                $('button.' + selector).remove();
+                $('#' + selector).replaceWith('<button id="conf" class="btns"><img src="img/check2.png"></button><input type="text" id="new" class="entry"></input><br>')
+                $('button').attr('disabled', true);
+                $('#new').on('change', function(){
+                    var str = $('#new').val();
+                    if(str != ''){
+                       $('#conf').attr('disabled', false);
+                    }
+                });
+                $('#conf').on('click', function(){
+                    var newItem = $('input').val();
+                    console.log(newItem);
+                    var querystring = 'oldItem=' + oldItem + '&newItem=' + newItem;
+                    querystring = querystring.replace(/ /g , '-');
+                    console.log(querystring);
+                    $.ajax({
+                       type: "post",
+                       url: "http://seguuro.altervista.org/prokletApp/editDisp.php",
+                       data: querystring,
+                       success: function(result){
+                           if(result == 'ok'){
+                               console.log(result);
+                               $('input').replaceWith('<div class="entry">' + newItem + '</div>');
+                               $('button').attr('disabled', false);
+                               $('#conf').remove();
+                           }else{
+                               alert(result);
+                           }
+                       },
+                       error: function(result){
+                           console.log("errore");
+                           console.log(result);
+                           alert('Impossibile raggiungere il server.')
+                       }
+                    });
+                });
+            }
+            
+            function openAltro(){
+                $('#dispensa, #altro, #title').addClass('nascosto');
+                $('#main').css('margin-top', '20%');
+                $('#main').css('height', '70%');
+                $('#main').css('background-image', 'url(img/closet2.png)');
+                $('#main').css('background-size', 'cover');
+                $('#main').addClass('overfl');
+                
+                fromAltro();
+                
+                altroCheck = setInterval(function(){
+                    var entries = $('.entry').length;
+                    var empty = $('.empty').length;
+                    if((!entries) && (!empty)){
+                        $('#main').css('padding-top', '3%');
+                        $('#main').html('<div id="empty" class="empty"><h1><strong>Scorte finite!</strong></h1></div>');
+                        $('#main').append('<br><button class="bttm" onclick="newAltro()">Nuovo</button>');
+                        $('#main').append('<button class="bttm" onclick="back()">Indietro</button>');
+                    }
+                    if((empty) && (entries))
+                        $('#empty').remove();
+                        $('#main').css('padding-top', '0');
+                }, 1000);
+            }
+            
+            function fromAltro(){
+                var querystring = "ask=requestAltro";
+                $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/fromAltro.php",
+                   data: querystring,
+                   success: function(result){
+//                       console.log("OK");
+//                       console.log(result);
+                       if(result){
+                           result = result.replace(/-/g , ' ');
+                           $('#main').html(result);
+                       }
+                   },
+                   error: function(result){
+                       alert("Impossibile contattare il server.");
+                   }
+               });
+            }
+            
+            function newAltro(){
+                $('.bttm').first().before('<button id="conf" class="btns" onclick="toAltro()"><img src="img/check2.png"></button><input type="text" id="new" class="entry"></input><br>');
+                $('button').attr('disabled', true);
+                $('#new').on('change', function(){
+                    var str = $('#new').val();
+                    if(str != ''){
+                       $('#conf').attr('disabled', false);
+                    }
+                });
+            }
+            
+            function toAltro(){
+                var newItem = $('input').val();
+                console.log(newItem);
+                var validString = newItem.replace(/ /g , '-');
+                console.log(validString);
+                var querystring = 'item=' + validString;
+                console.log(querystring);
+                $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/toAltro.php",
+                   data: querystring,
+                   success: function(result){
+                       if(result == 'ok'){
+                           console.log(result);
+                           $('input').replaceWith('<div class="entry">' + newItem + '</div>');
+                           $('button').attr('disabled', false);
+                           $('#conf').remove();
+                       }else{
+                           alert(result);
+                       }
+                   },
+                   error: function(result){
+//                       console.log("errore");
+//                       console.log(result);
+                       alert('Impossibile raggiungere il server.')
+                   }
+                });
+            }
+            
+            function eraseAltro(selector){
+                var delItem = $('#' + selector).text();
+                console.log(delItem);
+                var validString = delItem.replace(/ /g , '-');
+                console.log(validString);
+                var querystring = 'item=' + validString;
+                console.log(querystring);
+                console.log(selector);
+                $.ajax({
+                   type: "post",
+                   url: "http://seguuro.altervista.org/prokletApp/eliminaAltro.php",
+                   data: querystring,
+                   success: function(result){
+                       if(result == 'ok'){
+                           console.log(result);
+                           $('.' + selector).remove();
+                       }else{
+                           alert(result);
+                       }
+                   },
+                   error: function(result){
+                       console.log("errore");
+                   }
+                });
+            }
+            
+            function editAltro(selector){
+                var oldItem = $('#' + selector).text();
+                console.log(oldItem);
+                $('button.' + selector).remove();
+                $('#' + selector).replaceWith('<button id="conf" class="btns"><img src="img/check2.png"></button><input type="text" id="new" class="entry"></input><br>')
+                $('button').attr('disabled', true);
+                $('#new').on('change', function(){
+                    var str = $('#new').val();
+                    if(str != ''){
+                       $('#conf').attr('disabled', false);
+                    }
+                });
+                $('#conf').on('click', function(){
+                    var newItem = $('input').val();
+                    console.log(newItem);
+                    var querystring = 'oldItem=' + oldItem + '&newItem=' + newItem;
+                    querystring = querystring.replace(/ /g , '-');
+                    console.log(querystring);
+                    $.ajax({
+                       type: "post",
+                       url: "http://seguuro.altervista.org/prokletApp/editAltro.php",
+                       data: querystring,
+                       success: function(result){
+                           if(result == 'ok'){
+                               console.log(result);
+                               $('input').replaceWith('<div class="entry">' + newItem + '</div>');
+                               $('button').attr('disabled', false);
+                               $('#conf').remove();
+                           }else{
+                               alert(result);
+                           }
+                       },
+                       error: function(result){
+                           console.log("errore");
+                           console.log(result);
+                           alert('Impossibile raggiungere il server.')
+                       }
+                    });
+                });
+            }
+            
+            function back(){
+                location.reload();
+            }
+        </script>
+        <script type="text/javascript" src="cordova.js"></script>
+    </body>
+</html>
