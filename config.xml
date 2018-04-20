@@ -1,23 +1,25 @@
 <?xml version='1.0' encoding='utf-8'?>
-
-<widget id="com.seguuro.prokletapp"
-        version="1.0.0" 
-        xmlns="http://www.seguuro.com/prokletapp" 
-        xmlns:gap="http://phonegap.com/ns/1.0">
-    
+<widget id="com.phonegap.helloworld" version="1.0.0" xmlns="http://seguuro.altervista.org" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>ProkletApp</name>
-    
     <description>
         App 4 Fun
     </description>
-    
     <author email="kitchenknife@hotmail.com" href="www.google.com">
         Marco G.
     </author>
-    
-    <platform name="android" />
-    
-    <content src="index.html" />
-    
-    <access origin="*" />
+	
+	<content src="index.html" />
+	
+	<access origin="http://seguuro.altervista.org/prokletApp/fromDispensa.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/fromAltro.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/toDispensa.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/toAltro.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/editDisp.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/editAltro.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/eliminaDisp.php" />
+	<access origin="http://seguuro.altervista.org/prokletApp/eliminaAltro.php" />
+	
+	<platform name="android" />
+	
+	<plugin name="cordova-plugin-whitelist" source="npm"/>  
 </widget>
